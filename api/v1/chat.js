@@ -5,13 +5,16 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: "Method not allowed" });
   }
   try {
-    // Ensure the model param is set in the body
+    // Log incoming request body for debugging
+    console.log("Incoming request body:", req.body);
+
+    // Prepare request for OpenAI API
     const body = {
-      model: "gpt-4o-mini",   // Add your desired model here
-      messages: req.body.messages || [],  // Pass the messages array from the client
-      // you can pass other OpenAI parameters here as needed
+      model: "gpt-4o-mini",
+      messages: req.body.messages || []
     };
 
+    // Call OpenAI Chat Completion
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -22,8 +25,17 @@ module.exports = async (req, res) => {
     });
 
     const data = await response.json();
-    res.status(200).json(data);
+    console.log("OpenAI API Response:", data);
+
+    // Extract the first message from choices (if available)
+    if (data.choices && data.choices.length > 0) {
+      const message = data.choices[0].message;
+      res.status(200).json({ message });
+    } else {
+      res.status(200).json({ message: "No message returned from Goro." });
+    }
   } catch (e) {
+    console.error("Error in /api/v1/chat:", e);
     res.status(500).json({ error: e.message });
   }
 };
