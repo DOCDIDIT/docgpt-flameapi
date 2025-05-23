@@ -14,8 +14,17 @@ module.exports = async (req, res) => {
       body: JSON.stringify(req.body)
     });
     const data = await response.json();
-    res.status(200).json(data);
+
+    console.log('OpenAI API Response:', data); // Debug log
+
+    if (data.choices && data.choices.length > 0) {
+      res.status(200).json({ message: data.choices[0].message.content });
+    } else {
+      console.log('No message returned from OpenAI:', data);
+      res.status(200).json({ message: "" });
+    }
   } catch (e) {
+    console.log('Error caught:', e.message); // Log error details
     res.status(500).json({ error: e.message });
   }
 };
